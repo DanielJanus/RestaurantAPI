@@ -21,6 +21,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using RestaurantAPI.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RestaurantAPI
 {
@@ -45,7 +47,7 @@ namespace RestaurantAPI
                 option.DefaultAuthenticateScheme = "Bearer";
                 option.DefaultScheme = "Bearer";
                 option.DefaultChallengeScheme = "Bearer";
-            }).AddJwtBearer(cfg => 
+            }).AddJwtBearer(cfg =>
             {
                 cfg.RequireHttpsMetadata = false;
                 cfg.SaveToken = true;
@@ -57,6 +59,15 @@ namespace RestaurantAPI
                 };
             });
 
+            services.AddAuthorization(options => 
+            {
+                options.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality"));
+                options.AddPolicy("AtleastTwenty", builder => builder.AddRequirements(new MinimumAgeRequirement(20)));
+                options.AddPolicy("CreatedAtLeastTwoRestaurants", builder => builder.AddRequirements(new CreatedMultipleRestaurantsRequirement(2)));
+            });
+            services.AddScoped<IAuthorizationHandler, MinimumAgeRequirementHandler>();
+            services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
+            services.AddScoped<IAuthorizationHandler, CreatedMultipleRestaurantsRequirementHander>();
             services.AddControllers();
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
@@ -70,6 +81,8 @@ namespace RestaurantAPI
             services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
             services.AddScoped<ErrorHandlingMiddleware>();
             services.AddScoped<RequestTimeMiddleware>();
+            services.AddScoped<IUserContextService, UserContextSerivce>();
+            services.AddHttpContextAccessor();
             services.AddSwaggerGen();
         }
 
@@ -85,6 +98,7 @@ namespace RestaurantAPI
 
             app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseMiddleware<RequestTimeMiddleware>();
+
             app.UseAuthentication();
 
             app.UseHttpsRedirection();
@@ -96,6 +110,8 @@ namespace RestaurantAPI
             });
 
             app.UseRouting();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
