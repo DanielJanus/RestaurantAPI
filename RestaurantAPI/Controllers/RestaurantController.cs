@@ -23,10 +23,10 @@ namespace RestaurantAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "HasNationality")]
-        public ActionResult<IEnumerable<RestaurantDto>> GetAll()
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<RestaurantDto>> GetAll([FromQuery] RestaurantQuery restaurantQuery)
         {
-            var restaurantsDtos = _restaurantService.GetAll();
+            var restaurantsDtos = _restaurantService.GetAll(restaurantQuery);
 
             return Ok(restaurantsDtos);
         }
@@ -59,6 +59,7 @@ namespace RestaurantAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HasNationality")]
         public ActionResult Update([FromBody] UpdateRestaurantDto dto, [FromRoute] int id)
         {
              _restaurantService.Update(dto, id);

@@ -8,10 +8,10 @@ namespace RestaurantAPI.Authorization
 {
     public class MinimumAgeRequirement : IAuthorizationRequirement
     {
+        public int MinimumAge { get; }
         public MinimumAgeRequirement(int minimumAge)
         {
             minimumAge = MinimumAge;
         }
-        public int MinimumAge { get; }
     }
 }

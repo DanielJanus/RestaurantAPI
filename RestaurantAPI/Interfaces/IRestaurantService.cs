@@ -10,7 +10,7 @@ namespace RestaurantAPI.Interfaces
     public interface IRestaurantService
     {
         RestaurantDto GetById(int id);
-        IEnumerable<RestaurantDto> GetAll();
+        PagedResult<RestaurantDto> GetAll(RestaurantQuery restaurantQuery);
         int Create(CreateRestaurantDto dto);
         void Delete(int id);
         void Update(UpdateRestaurantDto dto, int id);
